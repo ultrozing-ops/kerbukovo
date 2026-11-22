@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ru" data-share-url="https://ultrozing-ops.github.io/kerbukovo/">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f1f3ec">
+    <meta name="description" content="Интерактивная 3D-модель участка в Кербуково с прогулкой, инженерными слоями и пометками.">
+    <title>Проект Участка Кербуково</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23243e33'/%3E%3Cpath d='M6 17l10-6 10 6-10 6zM6 21l10 6 10-6' fill='none' stroke='%23eaf6df' stroke-width='1.7'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="site.css">
+    <script defer src="app.js"></script>
+</head>
+<body>
+<div class="app">
+    <header class="page-header">
+        <div class="brand">
+            <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 28 28"><path d="m3 13 11-6 11 6-11 6zM3 18l11 6 11-6M14 3v7"/></svg></span>
+            <div><div class="overline">Проект участка</div><h1>Кербуково</h1></div>
+        </div>
+        <a class="button" id="download" href="kerbukovo-offline.zip" download><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span>Скачать ZIP</span></a>
+    </header>
+    <main class="workspace">
+        <section class="viewer-card" aria-label="Интерактивный вид участка">
+            <div class="toolbar">
+                <div class="modes" aria-label="Режим камеры">
+                    <button class="mode active" data-mode="orbit" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-cube"/></svg>Обзор</button>
+                    <button class="mode" data-mode="walk" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-walk"/></svg>Прогулка</button>
+                    <button class="mode" data-mode="plan" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-plan"/></svg>План</button>
+                </div>
+                <button class="icon-button" id="reset-view" title="Вернуть исходный вид" aria-label="Вернуть исходный вид"><svg class="icon" aria-hidden="true"><use href="#i-reset"/></svg></button>
+            </div>
+            <div class="viewport" id="viewport" tabindex="0" aria-label="3D-модель участка">
+                <div id="stage"></div>
+                <div class="scene-status" id="loading">Загружается 3D-модель…</div>
+                <div class="viewport-top">
+                    <div class="compass" title="Север"><span>С</span><svg id="compass-arrow" viewBox="0 0 24 26" aria-hidden="true"><path d="M12 2 22 23l-10-5-10 5z"/></svg></div>
+                    <span class="view-label" id="camera-label">Вид участка</span>
+                </div>
+                <div class="touch-controls" id="touch-controls" hidden aria-label="Перемещение">
+                    <button data-key="KeyW" aria-label="Вперёд">↑</button>
+                    <button data-key="KeyA" aria-label="Влево">←</button>
+                    <button data-key="KeyS" aria-label="Назад">↓</button>
+                    <button data-key="KeyD" aria-label="Вправо">→</button>
+                </div>
+                <div class="viewport-bottom">
+                    <p id="mode-hint">Перетаскивание — поворот · Колесо — масштаб</p>
+                    <button class="button accent" id="add-note"><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg><span>Пометка</span></button>
+                </div>
+            </div>
+            <div class="viewer-footer">
+                <div class="surfaces" aria-label="Типы покрытия">
+                    <span><i class="swatch gravel"></i>Щебень</span><span><i class="swatch blacksoil"></i>Чернозём · 6 м</span><span><i class="swatch sand"></i>Супесь</span>
+                </div>
+                <span class="elevation"><svg class="icon" aria-hidden="true"><use href="#i-slope"/></svg>Перепад 2 м</span>
+            </div>
+        </section>
+        <aside class="sidebar" aria-label="Объекты и пометки">
+            <div class="side-tabs" aria-label="Панель">
+                <button class="side-tab active" data-panel="objects" aria-pressed="true">Объекты</button>
+                <button class="side-tab" data-panel="notes" aria-pressed="false">Пометки <span class="count" id="note-count">0</span></button>
+            </div>
+            <section id="objects-panel" class="side-content">
+                <div class="layers" aria-label="Инженерные слои">
+                    <button class="layer active water" id="water-layer" aria-pressed="true"><i></i>Траншея</button>
+                    <button class="layer active power" id="power-layer" aria-pressed="true"><i></i>СИП</button>
+                </div>
+                <div id="objects-list" class="object-list"></div>
+                <details class="assumptions">
+                    <summary>Привязки и допущения</summary>
+                    <p>Контейнеры параллельны, 4,5 м между длинными стенками. Бытовка показана слева от них, 5 м по линии забора. Въезд принят за отметку 0,0 м, левая граница — за −2,0 м. Перепад распределён равномерно.</p>
+                    <p>Привязки, места подключения и форма рельефа требуют обмера. Бирюзовая линия показывает предполагаемую ось траншеи на поверхности.</p>
+                </details>
+            </section>
+            <section id="notes-panel" class="side-content" hidden>
+                <div class="note-tools">
+                    <button class="button small" id="export-notes" title="Скачать пометки в JSON"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>Экспорт</button>
+                    <button class="button small" id="import-notes"><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg>Импорт</button>
+                    <input type="file" id="notes-file" accept=".json,application/json" hidden>
+                </div>
+                <div id="notes-empty" class="notes-empty"><h2>Обсудим по точкам</h2><p>Нажмите «Пометка», выберите место на участке и запишите, что хотите там сделать.</p></div>
+                <div id="notes-list" class="note-list"></div>
+                <form id="note-form" class="note-form" hidden>
+                    <div class="form-title"><h2 id="note-form-heading">Новая пометка</h2><button type="button" class="icon-button" id="cancel-note" aria-label="Закрыть редактор">×</button></div>
+                    <label>Название<input id="note-title" maxlength="90" required autocomplete="off" placeholder="Например, место для щебня"></label>
+                    <label>Комментарий<textarea id="note-detail" maxlength="600" rows="3" placeholder="Что обсудить или сделать"></textarea></label>
+                    <div class="form-buttons"><button class="button accent" type="submit">Сохранить</button><button class="button small" type="button" id="delete-note" hidden>Удалить</button></div>
+                </form>
+                <button class="button share" id="share-notes" hidden><svg class="icon" aria-hidden="true"><use href="#i-link"/></svg>Ссылка с пометками</button>
+                <p class="note-help">Пометки хранятся в этом браузере. Ссылка или JSON передают их другому человеку.</p>
+            </section>
+        </aside>
+    </main>
+    <footer class="page-footer">Эскиз для планирования работ <span>Размеры и отметки уточняются на месте</span></footer>
+</div>
+<div class="toast" role="status" id="toast" hidden></div>
+<dialog id="share-dialog"><form method="dialog"><h2>Ссылка с пометками</h2><label>Скопируйте ссылку<input readonly id="share-url"></label><button class="button accent">Готово</button></form></dialog>
+<svg class="symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-cube" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3zm0 9 8-4.5m-8 4.5L4 7.5m8 4.5v9"/></symbol>
+    <symbol id="i-walk" viewBox="0 0 24 24"><circle cx="13" cy="4" r="2"/><path d="m8 21 2-5 1-5m4 10-1-5-3-3 1-5m-6 5 3-4 3-1 3 4 4 1"/></symbol>
+    <symbol id="i-plan" viewBox="0 0 24 24"><path d="M4 4h16v16H4zm0 6h7m0-6v13h9M4 15h4"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M19 10c0 5-7 10-7 10s-7-5-7-10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 9a8 8 0 1 1 .7 8M4 4v5h5"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v11m-4-4 4 4 4-4M5 14v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4m-4 4 4-4 4 4M5 14v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5"/></symbol>
+    <symbol id="i-slope" viewBox="0 0 24 24"><path d="M4 17h16V7L4 17z"/></symbol>
+    <symbol id="i-house" viewBox="0 0 24 24"><path d="m3 11 9-7 9 7M5 10v10h14V10m-9 10v-6h4v6"/></symbol>
+    <symbol id="i-container" viewBox="0 0 24 24"><path d="M3 6h18v12H3zM7 6v12m5-12v12m5-12v12"/></symbol>
+    <symbol id="i-water" viewBox="0 0 24 24"><path d="M12 2c4 6 7 9 7 13a7 7 0 1 1-14 0c0-4 3-7 7-13Z"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="m13 2-9 13h7l-1 7 10-13h-8l1-7Z"/></symbol>
+    <symbol id="i-tree" viewBox="0 0 24 24"><path d="m12 2 5 7h-2l5 7H4l5-7H7zm0 14v5"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="m10 13 4-4m-6 6-2 2a3.5 3.5 0 0 1-5-5l4-4a3.5 3.5 0 0 1 5 0m4 3 2-2a3.5 3.5 0 0 1 5 5l-4 4a3.5 3.5 0 0 1-5 0" transform="translate(1 -1)"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m10 6 6 6-6 6"/></symbol>
+</svg>
+</body>
+</html>
+
