@@ -7,6 +7,8 @@
     <meta name="description" content="Интерактивная 3D-модель участка в Кербуково с прогулкой, инженерными слоями и пометками.">
     <title>Проект Участка Кербуково</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23243e33'/%3E%3Cpath d='M6 17l10-6 10 6-10 6zM6 21l10 6 10-6' fill='none' stroke='%23eaf6df' stroke-width='1.7'/%3E%3C/svg%3E">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="icons/icon-180.png">
     <link rel="stylesheet" href="site.css">
     <script defer src="app.js"></script>
 </head>
@@ -17,7 +19,15 @@
             <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 28 28"><path d="m3 13 11-6 11 6-11 6zM3 18l11 6 11-6M14 3v7"/></svg></span>
             <div><div class="overline">Проект участка</div><h1>Кербуково</h1></div>
         </div>
-        <a class="button" id="download" href="kerbukovo-offline.zip" download><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span>Скачать ZIP</span></a>
+        <details class="download-menu" id="downloads">
+            <summary class="button"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>Скачать</summary>
+            <div class="download-options">
+                <a class="button accent" href="kerbukovo-mobile.html" download>HTML для телефона</a>
+                <a class="button" href="kerbukovo-offline.zip" download>Архив ZIP</a>
+                <p>На iPhone откройте страницу в Safari и добавьте её на экран «Домой».</p>
+                <p class="offline-ready" id="offline-ready" hidden>Приложение сохранено для работы без сети.</p>
+            </div>
+        </details>
     </header>
     <main class="workspace">
         <section class="viewer-card" aria-label="Интерактивный вид участка">
@@ -32,6 +42,7 @@
             <div class="viewport" id="viewport" tabindex="0" aria-label="3D-модель участка">
                 <div id="stage"></div>
                 <div class="scene-status" id="loading">Загружается 3D-модель…</div>
+                <noscript><style>#loading{display:none}</style><p class="scene-status">Откройте <a href="https://ultrozing-ops.github.io/kerbukovo/">Кербуково</a> в браузере с JavaScript и WebGL 2.</p></noscript>
                 <div class="viewport-top">
                     <div class="compass" title="Север"><span>С</span><svg id="compass-arrow" viewBox="0 0 24 26" aria-hidden="true"><path d="M12 2 22 23l-10-5-10 5z"/></svg></div>
                     <span class="view-label" id="camera-label">Вид участка</span>

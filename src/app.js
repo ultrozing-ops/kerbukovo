@@ -10,7 +10,7 @@ const tabButtons=[...document.querySelectorAll('button[data-panel]')];
 const svg=(name,cls='icon')=>'<svg class="'+cls+'" aria-hidden="true"><use href="#i-'+name+'"/></svg>';
 const hints={
     orbit:'Перетаскивание — поворот · Колесо — масштаб',
-    walk:matchMedia('(pointer: coarse)').matches ? 'Кнопки — идти · Перетаскивание — взгляд' : 'W A S D или стрелки — идти · Мышь с нажатой кнопкой — взгляд',
+    walk:matchMedia('(pointer: coarse), (max-width: 700px)').matches ? 'Кнопки — идти · Перетаскивание — взгляд' : 'W A S D или стрелки — идти · Мышь с нажатой кнопкой — взгляд',
     plan:'Вид сверху · Колесо — масштаб · Правая кнопка — сдвиг',
 };
 const labels={orbit:'Вид участка',walk:'Прогулка',plan:'План · север сверху'};
@@ -221,7 +221,20 @@ $('share-notes').addEventListener('click',async ()=>{
         }
     } catch (error) {tell(error.message);}
 });
-if(location.protocol==='file:') $('download').hidden=true;
+const localCopy=document.documentElement.dataset.offlineCopy==='true'
+    || !['http:','https:'].includes(location.protocol);
+const downloads=$('downloads');
+downloads.hidden=localCopy;
+document.addEventListener('click',event=>{
+    if(downloads.open && !downloads.contains(event.target)) downloads.open=false;
+});
+window.addEventListener('keydown',e=>{if(e.key==='Escape') downloads.open=false;});
+if(!localCopy && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+        .then(()=>navigator.serviceWorker.ready)
+        .then(()=>$('offline-ready').hidden=false)
+        .catch(()=>{});
+}
 try {
     viewer=setupViewer({
         stage:$('stage'),viewport,compass:$('compass-arrow'),cameraLabel,touch:$('touch-controls'),

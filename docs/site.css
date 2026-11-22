@@ -104,6 +104,14 @@ dialog::backdrop{background:#16271f77}
 .touch-controls button:nth-child(2){grid-row:2;grid-column:1}
 .touch-controls button:nth-child(3){grid-row:2;grid-column:2}
 .touch-controls button:nth-child(4){grid-row:2;grid-column:3}
-@media(pointer:fine){.touch-controls{display:none}}
+@media(pointer:fine) and (min-width:701px){.touch-controls{display:none}}
 @media(max-width:850px){.app{padding:15px 14px 10px}.workspace{height:auto;min-height:0;grid-template-columns:1fr}.viewport{height:clamp(355px,57vh,650px)}.sidebar{min-height:0}.side-content{overflow:visible}.object-list{grid-template-columns:repeat(2,minmax(0,1fr))}.page-footer{flex-wrap:wrap}}
 @media(max-width:520px){.app{padding:11px 8px}.brand{gap:8px}.brand-mark{width:40px;height:40px;border-radius:9px}.brand-mark svg{width:26px}.button{gap:4px;padding:8px}.overline{font-size:.68rem}.mode{padding:5px 6px;font-size:.83rem;gap:4px}.mode .icon{width:16px;height:16px}.toolbar{padding:7px}.viewer-footer{padding:8px}.surfaces{gap:7px}.viewport-top,.viewport-bottom{left:8px;right:8px}#mode-hint{font-size:.76rem}.object-list{grid-template-columns:1fr}}
+
+.download-menu{position:relative;z-index:3;flex:none}
+.download-menu summary{list-style:none;cursor:pointer}
+.download-menu summary::-webkit-details-marker{display:none}
+.download-options{position:absolute;right:0;top:calc(100% + 7px);display:grid;gap:7px;width:min(272px,calc(100vw - 30px));padding:10px;background:var(--paper);border:1px solid var(--border);border-radius:9px;box-shadow:0 5px 22px #203b2d25}
+.download-options p{font-size:.83rem;color:var(--muted);line-height:1.4}
+.download-options .offline-ready{color:var(--pine);font-weight:650}
+.scene-status a{text-decoration:underline}

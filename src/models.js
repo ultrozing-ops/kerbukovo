@@ -2,6 +2,7 @@ import * as T from 'three';
 import {boundary, gate, house, porchDepth, bath, cabin, toilet, containerA, containerB, heightAt, center,
     trees, surfaces, pole, electricEnd, well, entry, water} from './site-data.js';
 import {profileFence} from './profile-fence.js';
+import {addLandscape} from './landscape.js';
 
 const V = (x,y,z) => new T.Vector3(x,y,z);
 const standard = (color, roughness=.82, metalness=0) => new T.MeshStandardMaterial({color,roughness,metalness});
@@ -404,6 +405,7 @@ export function createSite(scene) {
     m.roof.side=m.roofGreen.side=T.DoubleSide;
     const ground=new T.Group(), structures=new T.Group(), waterLayer=new T.Group(), powerLayer=new T.Group(), marking=new T.Group();
     scene.add(ground,structures,waterLayer,powerLayer,marking);
+    addLandscape(ground,horizontal);
     const surroundings=horizontal([{x:-450,z:-450},{x:450,z:-450},{x:450,z:450},{x:-450,z:450}],
         x=>heightAt(x)-.036,m.meadow,ground);
     const surfaceMeshes=[
@@ -457,6 +459,7 @@ export function createSite(scene) {
     }
     return {structures,ground,surfaceMeshes:[...surfaceMeshes,surroundings],waterLayer,powerLayer,marking,deckY};
 }
+
 
 
 

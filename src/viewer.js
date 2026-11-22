@@ -1,6 +1,7 @@
 import * as T from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {createSite} from './models.js';
+import {skyTexture} from './landscape.js';
 import {withinScene,boundary,contains,heightAt,house,porchDepth,bath,cabin,toilet,containerA,containerB,gate,pole} from './site-data.js';
 
 const vectors={KeyW:[0,1],ArrowUp:[0,1],KeyA:[-1,0],ArrowLeft:[-1,0],KeyS:[0,-1],ArrowDown:[0,-1],
@@ -48,10 +49,11 @@ function pinMaterial(number,selected) {
 
 export function setupViewer({stage,viewport,compass,cameraLabel,touch,onPoint,onPin}) {
     const scene=new T.Scene();
-    scene.background=new T.Color('#e7eee6');
-    scene.fog=new T.Fog('#e7eee6',125,245);
+    scene.background=skyTexture();
+    scene.fog=new T.Fog('#c2dbe8',96,245);
     const renderer=new T.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
-    renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));
+    const mobile=matchMedia('(pointer: coarse), (max-width: 700px)').matches;
+    renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.25:1.8));
     renderer.shadowMap.enabled=true;
     renderer.shadowMap.type=T.PCFSoftShadowMap;
     renderer.shadowMap.autoUpdate=false;
@@ -63,7 +65,8 @@ export function setupViewer({stage,viewport,compass,cameraLabel,touch,onPoint,on
     const sun=new T.DirectionalLight('#fff0d6',2.35);
     sun.position.set(-36,77,36);
     sun.castShadow=true;
-    sun.shadow.mapSize.set(2048,2048);
+    const shadowSize=mobile?1024:2048;
+    sun.shadow.mapSize.set(shadowSize,shadowSize);
     Object.assign(sun.shadow.camera,{left:-73,right:73,top:67,bottom:-67,near:2,far:175});
     sun.shadow.bias=-.00025;
     sun.shadow.normalBias=.035;
@@ -284,6 +287,7 @@ export function setupViewer({stage,viewport,compass,cameraLabel,touch,onPoint,on
         },
     };
 }
+
 
 
 

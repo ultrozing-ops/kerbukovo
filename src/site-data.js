@@ -8,6 +8,7 @@ const houseFront = 230 + 8.5 * scale;
 const northWestFence = houseFront - 5 * scale;
 export const boundary = [[37,northWestFence], [583,northWestFence], [583,151], [1433,272], [1523,272],
     [1523,503], [866,503], [37,558]].map(([x,y]) => point(x,y));
+export const road = {x:boundary[5].x,width:7};
 export const gate = [point(1523,359), point(1523,437)];
 export const house = footprint(623,230,8,8.5);
 export const porchDepth = 2.15;
@@ -53,7 +54,9 @@ export const objects = [
     {id:'toilet',name:'Биотуалет',detail:'Зелёный · внутри напротив опоры',icon:'house',at:center(toilet),size:4,approach:[-.55,-1]},
     {id:'well',name:'Скважина и ввод',detail:'Траншея ≈ ' + Math.round(waterLength) + ' м · до дна 1,50 м',icon:'water',at:well,size:6},
     {id:'pole',name:'Электроопора и СИП',detail:'Снаружи · 4 м от границы',icon:'bolt',at:pole,size:9},
+    {id:'road',name:'Дорога и лес',detail:'7 м вдоль правого забора',icon:'plan',at:{x:road.x+5.1,z:4.3},size:12,approach:[-1,.13]},
     {id:'trees',name:'Три ели',detail:'Снаружи · у нижней границы',icon:'tree',at:trees[1],size:12},
 ];
+
 
 
