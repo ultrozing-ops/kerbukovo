@@ -27,7 +27,7 @@ p{margin:0}
 .symbols{position:absolute;width:0;height:0;overflow:hidden}
 .workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,325px);gap:16px;min-height:620px;height:calc(100dvh - 142px)}
 .viewer-card,.sidebar{background:var(--paper);border:1px solid var(--border);border-radius:13px;box-shadow:0 2px 7px #2c492b0a;min-width:0;overflow:hidden}
-.viewer-card{display:grid;grid-template-rows:auto 1fr auto}
+.viewer-card{display:grid;grid-template-rows:auto auto 1fr auto}
 .toolbar{padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:9px;border-bottom:1px solid var(--border)}
 .modes{display:flex;align-items:center;gap:3px;padding:3px;background:#eef2eb;border-radius:8px;flex-wrap:wrap}
 .mode{padding:6px 10px;background:none;border:1px solid transparent;display:flex;align-items:center;gap:6px;border-radius:6px;font-size:.90rem;white-space:nowrap}
@@ -115,3 +115,14 @@ dialog::backdrop{background:#16271f77}
 .download-options p{font-size:.83rem;color:var(--muted);line-height:1.4}
 .download-options .offline-ready{color:var(--pine);font-weight:650}
 .scene-status a{text-decoration:underline}
+
+.scenarios{display:flex;align-items:center;justify-content:space-between;gap:7px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--border)}
+.project-switch,.project-layers{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.project-tab{padding:6px 9px;background:#f7f8f4;border:1px solid #dce5da;color:var(--muted);border-radius:6px;font-size:.88rem;white-space:nowrap}
+.project-tab.active,.project-tab:hover{background:#e2eed8;color:#294b35;border-color:#c4d7bb}
+.project-tab.active{font-weight:700}
+.project-layers .layer{font-size:.82rem}
+.project-layers .layer.active{background:#edf1e7;color:#324d3d;border-color:#c3d2c1}
+.project-layers .layer.active#evening{background:#f8edd5;color:#6c522e;border-color:#e7d7b6}
+.project-layers .icon{width:16px;height:16px}
+@media(max-width:520px){.scenarios{padding:6px 7px}.project-tab{padding:6px;font-size:.80rem}.project-layers .layer{padding:4px 6px;gap:4px}}

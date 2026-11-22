@@ -50,7 +50,7 @@ export const objects = [
     {id:'house',name:'Дом',detail:'8 × 8,5 м вместе с крыльцом',icon:'house',at:center(house),size:9},
     {id:'bath',name:'Баня',detail:'4 × 5 м · 1 м от забора',icon:'house',at:center(bath),size:7},
     {id:'containers',name:'Два контейнера',detail:'Синие · зазор 4,5 м',icon:'container',at:{x:containerA.x+6,z:(containerA.z+containerB.z+containerA.d)/2},size:13},
-    {id:'cabin',name:'Бытовка',detail:'4 × 2 м · односкатная крыша',icon:'house',at:center(cabin),size:5},
+    {id:'cabin',name:'Бытовка',detail:'4 × 2 м · односкатная крыша',icon:'house',at:center(cabin),size:5,approach:[-.62,-.95]},
     {id:'toilet',name:'Биотуалет',detail:'Зелёный · внутри напротив опоры',icon:'house',at:center(toilet),size:4,approach:[-.55,-1]},
     {id:'well',name:'Скважина и ввод',detail:'Траншея ≈ ' + Math.round(waterLength) + ' м · до дна 1,50 м',icon:'water',at:well,size:6},
     {id:'pole',name:'Электроопора и СИП',detail:'Снаружи · 4 м от границы',icon:'bolt',at:pole,size:9},

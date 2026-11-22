@@ -31,6 +31,16 @@
     </header>
     <main class="workspace">
         <section class="viewer-card" aria-label="Интерактивный вид участка">
+            <div class="scenarios">
+                <div class="project-switch" aria-label="Сценарий участка">
+                    <button class="project-tab" data-project="actual" aria-pressed="true">Сейчас</button>
+                    <button class="project-tab" data-project="landscape" aria-pressed="false">Благоустройство</button>
+                </div>
+                <div class="project-layers" id="project-layers" hidden>
+                    <button class="layer" id="evening" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-night"/></svg>Вечер</button>
+                    <button class="layer active" id="canopy-roof" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-roof"/></svg>Крыша навеса</button>
+                </div>
+            </div>
             <div class="toolbar">
                 <div class="modes" aria-label="Режим камеры">
                     <button class="mode active" data-mode="orbit" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-cube"/></svg>Обзор</button>
@@ -101,7 +111,7 @@
             </section>
         </aside>
     </main>
-    <footer class="page-footer">Эскиз для планирования работ <span>Размеры и отметки уточняются на месте</span></footer>
+    <footer class="page-footer"><span id="project-footer">Эскиз для планирования работ</span> <span>Размеры и отметки уточняются на месте</span></footer>
 </div>
 <div class="toast" role="status" id="toast" hidden></div>
 <dialog id="share-dialog"><form method="dialog"><h2>Ссылка с пометками</h2><label>Скопируйте ссылку<input readonly id="share-url"></label><button class="button accent">Готово</button></form></dialog>
@@ -120,6 +130,12 @@
     <symbol id="i-bolt" viewBox="0 0 24 24"><path d="m13 2-9 13h7l-1 7 10-13h-8l1-7Z"/></symbol>
     <symbol id="i-tree" viewBox="0 0 24 24"><path d="m12 2 5 7h-2l5 7H4l5-7H7zm0 14v5"/></symbol>
     <symbol id="i-link" viewBox="0 0 24 24"><path d="m10 13 4-4m-6 6-2 2a3.5 3.5 0 0 1-5-5l4-4a3.5 3.5 0 0 1 5 0m4 3 2-2a3.5 3.5 0 0 1 5 5l-4 4a3.5 3.5 0 0 1-5 0" transform="translate(1 -1)"/></symbol>
+    <symbol id="i-night" viewBox="0 0 24 24"><path d="M20 15.3A8.8 8.8 0 0 1 8.8 4.1 8.8 8.8 0 1 0 20 15.3Z"/><path d="M16 4v4m-2-2h4m2 3v3m-1.5-1.5h3"/></symbol>
+    <symbol id="i-roof" viewBox="0 0 24 24"><path d="M3 9 20 5l1 4L4 13 3 9Zm3 4v6m12-9v9"/></symbol>
+    <symbol id="i-ball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.7"/><path d="m12 8 4 3-1.5 4.5h-5L8 11l4-3V3.5M8 11l-4.7-.9M16 11l4.7-.9m-6.2 5.4 3 4.2m-8-4.2-3 4.2"/></symbol>
+    <symbol id="i-swing" viewBox="0 0 24 24"><path d="m4 20 3.5-14h9L20 20M7.5 6h9M10 6v9m4-9v9m-6 0h8"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 21c-4 0-7-2.5-7-6 0-3.4 2.5-6 4.2-8-.1 2.1.8 3.3 1.8 3.6.5-2.7 2.7-4.4 2.4-7.6 3.5 3.5 5.6 7.4 5.6 11.4 0 3.9-3 6.6-7 6.6Z"/></symbol>
+    <symbol id="i-car" viewBox="0 0 24 24"><path d="m4 11 2.4-4h11.2l2.4 4m-16 0h16v6H4v-6zm1 6v2m14-2v2m-12-5h2m6 0h2"/></symbol>
     <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m10 6 6 6-6 6"/></symbol>
 </svg>
 </body>

@@ -1,5 +1,6 @@
 import {objects} from './site-data.js';
 import {setupViewer} from './viewer.js';
+import {improvementObjects} from './improvement-data.js';
 import {MAX_NOTES,documentFor,readDocument,restore,save,decodeLink,shareLink} from './notes.js';
 
 const $=id=>document.getElementById(id);
@@ -7,6 +8,12 @@ const form=$('note-form'), title=$('note-title'), detail=$('note-detail'), toast
 const viewport=$('viewport'), hint=$('mode-hint'), cameraLabel=$('camera-label');
 const modeButtons=[...document.querySelectorAll('button[data-mode]')];
 const tabButtons=[...document.querySelectorAll('button[data-panel]')];
+const projectButtons=[...document.querySelectorAll('button[data-project]')];
+const initialView=new URLSearchParams(location.search).get('view');
+const preferences={actual:{water:true,power:true},landscape:{water:false,power:false}};
+let project=initialView==='landscape'||(initialView!=='actual'&&document.documentElement.dataset.offlineCopy==='true')
+    ?'landscape':'actual';
+let evening=false,canopyVisible=true;
 const svg=(name,cls='icon')=>'<svg class="'+cls+'" aria-hidden="true"><use href="#i-'+name+'"/></svg>';
 const hints={
     orbit:'Перетаскивание — поворот · Колесо — масштаб',
@@ -124,20 +131,70 @@ function merge(incoming) {
     persist(added.length?'Добавлено пометок: '+added.length:'Эти пометки уже открыты.');
 }
 
-for(const item of objects) {
-    const row=document.createElement('button');
-    row.className='object-row';row.type='button';row.dataset.object=item.id;
-    row.innerHTML='<span class="object-glyph '+item.icon+'">'+svg(item.icon)+'</span>'
-        +'<span><strong>'+item.name+'</strong><small>'+item.detail+'</small></span>'+svg('chevron','icon row-arrow');
-    row.addEventListener('click',()=>{
-        document.querySelector('.object-row.active')?.classList.remove('active');
-        row.classList.add('active');
-        viewer?.focus(item.at,item.size,item.approach);
-        if(mode==='walk') viewport.focus({preventScroll:true});
-        if(innerWidth<=850) viewport.scrollIntoView({block:'nearest',behavior:'smooth'});
-    });
-    $('objects-list').appendChild(row);
+function drawObjects() {
+    const visibleObjects=project==='landscape'?[...improvementObjects,...objects]:objects;
+    $('objects-list').replaceChildren();
+    for(const item of visibleObjects) {
+        const row=document.createElement('button');
+        row.className='object-row';row.type='button';row.dataset.object=item.id;
+        row.innerHTML='<span class="object-glyph '+item.icon+'">'+svg(item.icon)+'</span>'
+            +'<span><strong>'+item.name+'</strong><small>'+item.detail+'</small></span>'+svg('chevron','icon row-arrow');
+        row.addEventListener('click',()=>{
+            document.querySelector('.object-row.active')?.classList.remove('active');
+            row.classList.add('active');
+            viewer?.focus(item.at,item.size,item.approach);
+            if(mode==='walk') viewport.focus({preventScroll:true});
+            if(innerWidth<=850) viewport.scrollIntoView({block:'nearest',behavior:'smooth'});
+        });
+        $('objects-list').appendChild(row);
+    }
 }
+
+function layerState(id,value) {
+    const btn=$(id+'-layer');
+    btn.setAttribute('aria-pressed',value);
+    btn.classList.toggle('active',value);
+    viewer?.setLayer(id,value);
+}
+
+function updateProject() {
+    const planned=project==='landscape';
+    for(const b of projectButtons) {
+        const active=b.dataset.project===project;
+        b.classList.toggle('active',active);
+        b.setAttribute('aria-pressed',active);
+    }
+    $('project-layers').hidden=!planned;
+    $('project-footer').textContent=planned?'Концепция благоустройства':'Эскиз для планирования работ';
+    viewer?.setProject(planned);
+    viewer?.setEvening(planned&&evening);
+    viewer?.setCanopy(canopyVisible);
+    for(const id of ['water','power']) layerState(id,preferences[project][id]);
+    drawObjects();
+}
+
+for(const b of projectButtons) b.addEventListener('click',()=>{
+    project=b.dataset.project;
+    try {
+        const next=new URL(location.href);
+        if(project==='landscape'||document.documentElement.dataset.offlineCopy==='true') next.searchParams.set('view',project);
+        else next.searchParams.delete('view');
+        history.replaceState(null,'',next);
+    } catch {}
+    updateProject();
+});
+$('evening').addEventListener('click',()=>{
+    evening=!evening;
+    $('evening').setAttribute('aria-pressed',evening);
+    $('evening').classList.toggle('active',evening);
+    viewer?.setEvening(evening);
+});
+$('canopy-roof').addEventListener('click',()=>{
+    canopyVisible=!canopyVisible;
+    $('canopy-roof').setAttribute('aria-pressed',canopyVisible);
+    $('canopy-roof').classList.toggle('active',canopyVisible);
+    viewer?.setCanopy(canopyVisible);
+});
 
 for(const btn of tabButtons) btn.addEventListener('click',()=>panelTo(btn.dataset.panel));
 for(const btn of modeButtons) btn.addEventListener('click',()=>{
@@ -163,8 +220,8 @@ for(const id of ['water','power']) {
     const btn=$(id+'-layer');
     btn.addEventListener('click',()=>{
         const value=btn.getAttribute('aria-pressed')!=='true';
-        btn.setAttribute('aria-pressed',value);btn.classList.toggle('active',value);
-        viewer?.setLayer(id,value);
+        preferences[project][id]=value;
+        layerState(id,value);
     });
 }
 $('add-note').addEventListener('click',()=>{
@@ -211,7 +268,9 @@ $('notes-file').addEventListener('change',async e=>{
 $('share-notes').addEventListener('click',async ()=>{
     try {
         const base=document.documentElement.dataset.shareUrl || (location.protocol==='https:'?location.href:'');
-        const link=shareLink(notes,base);
+        const address=base?new URL(base):null;
+        if(address&&project==='landscape') address.searchParams.set('view','landscape');
+        const link=shareLink(notes,address?.href);
         try {
             await navigator.clipboard.writeText(link);
             tell('Ссылка с пометками скопирована.');
@@ -246,6 +305,7 @@ try {
     $('loading').textContent='Для 3D-режима нужен браузер с поддержкой WebGL 2.';
     for(const b of [...modeButtons,$('reset-view'),$('add-note')]) b.disabled=true;
 }
+updateProject();
 refresh();
 function loadHash() {
     try {

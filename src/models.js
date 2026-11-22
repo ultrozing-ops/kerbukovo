@@ -3,6 +3,7 @@ import {boundary, gate, house, porchDepth, bath, cabin, toilet, containerA, cont
     trees, surfaces, pole, electricEnd, well, entry, water} from './site-data.js';
 import {profileFence} from './profile-fence.js';
 import {addLandscape} from './landscape.js';
+import {createImprovement} from './improvement.js';
 
 const V = (x,y,z) => new T.Vector3(x,y,z);
 const standard = (color, roughness=.82, metalness=0) => new T.MeshStandardMaterial({color,roughness,metalness});
@@ -187,7 +188,7 @@ function makeBuilding(group,foot,opts,m) {
     const alcove=opts.kind==='bath'?{left:x+.58,right:x+2.23,depth:.73}:null;
     const floors=opts.piles?[x+.22,x+w/2,x+w-.22]:[x+.29,x+w-.29];
     for (const ix of floors) for (const iz of [z+.24,(z+front)/2,z+d-.18]) {
-        const gy=heightAt(ix), h=base-gy;
+        const gy=heightAt(opts.reversed ? 2*x+w-ix : ix), h=base-gy;
         box(group,m.pile,ix,gy+h/2-.015,iz,.22,h,.23);
     }
     box(group,m.deck,x+w/2,base-.075,z+d/2,w,.17,d,{repeat:true});
@@ -423,7 +424,12 @@ export function createSite(scene) {
     fence(structures,m.fence,boundary,gate);
     const deckY=makeBuilding(structures,house,{kind:'house',piles:true,porch:porchDepth},m);
     makeBuilding(structures,bath,{kind:'bath',body:m.bathWood,base:.35,wall:2.30,rise:1.13},m);
-    makeBuilding(structures,cabin,{kind:'cabin',body:m.cabinWood,roof:m.roofGreen,base:.29,wall:2.05,overhang:.20},m);
+    const shed = new T.Group();
+    const shedCenter = center(cabin);
+    makeBuilding(shed,cabin,{kind:'cabin',body:m.cabinWood,roof:m.roofGreen,base:.29,wall:2.05,overhang:.20,reversed:true},m);
+    shed.position.set(2*shedCenter.x,0,2*shedCenter.z);
+    shed.rotation.y=Math.PI;
+    structures.add(shed);
     makeToilet(structures,toilet,m);
     const containerRoof=makeContainer(structures,containerA,m);
     makeContainer(structures,containerB,m);
@@ -457,7 +463,9 @@ export function createSite(scene) {
         cylinder(waterLayer,m.waterRing,p.x,y+.040,z,.35,.036,28);
         cylinder(waterLayer,m.water,p.x,y+.068,z,.247,.018,28);
     }
-    return {structures,ground,surfaceMeshes:[...surfaceMeshes,surroundings],waterLayer,powerLayer,marking,deckY};
+    const improvement=createImprovement({horizontal,box,beam,cylinder,tube});
+    scene.add(improvement.group);
+    return {structures,ground,surfaceMeshes:[...surfaceMeshes,surroundings],waterLayer,powerLayer,marking,deckY,improvement};
 }
 
 

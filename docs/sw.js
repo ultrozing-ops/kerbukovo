@@ -1,4 +1,4 @@
-const cacheName = 'kerbukovo-app-v1.0.1';
+const cacheName = 'kerbukovo-app-v1.1.0';
 const scope = self.registration.scope;
 const appFiles = new Set([
     './', './index.html', './site.css', './app.js', './manifest.webmanifest',

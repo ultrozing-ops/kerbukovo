@@ -23,9 +23,6 @@ function nearFence(x,z) {
         return Math.hypot(x-a.x-dx*t,z-a.z-dz*t)<.24;
     });
 }
-function validStep(x,z) {
-    return withinScene(x,z) && !nearFence(x,z) && !walkBoxes.some(b=>contains(b,x,z,.24));
-}
 
 function pinMaterial(number,selected) {
     const canvas = document.createElement('canvas');
@@ -49,7 +46,9 @@ function pinMaterial(number,selected) {
 
 export function setupViewer({stage,viewport,compass,cameraLabel,touch,onPoint,onPin}) {
     const scene=new T.Scene();
-    scene.background=skyTexture();
+    const daySky=skyTexture();
+    let duskSky;
+    scene.background=daySky;
     scene.fog=new T.Fog('#c2dbe8',96,245);
     const renderer=new T.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
     const mobile=matchMedia('(pointer: coarse), (max-width: 700px)').matches;
@@ -61,7 +60,8 @@ export function setupViewer({stage,viewport,compass,cameraLabel,touch,onPoint,on
     renderer.toneMappingExposure=1.16;
     renderer.domElement.setAttribute('aria-label','Трёхмерная модель участка');
     stage.appendChild(renderer.domElement);
-    scene.add(new T.HemisphereLight('#f0f6ff','#aa9472',2.05));
+    const horizon=new T.HemisphereLight('#f0f6ff','#aa9472',2.05);
+    scene.add(horizon);
     const sun=new T.DirectionalLight('#fff0d6',2.35);
     sun.position.set(-36,77,36);
     sun.castShadow=true;
@@ -74,6 +74,11 @@ export function setupViewer({stage,viewport,compass,cameraLabel,touch,onPoint,on
     scene.add(sun,sun.target);
 
     const site=createSite(scene);
+    const improvement=site.improvement;
+    function validStep(x,z) {
+        if(!withinScene(x,z)||nearFence(x,z)||walkBoxes.some(b=>contains(b,x,z,.24))) return false;
+        return !improvement.group.visible||!improvement.colliders.some(b=>contains(b,x,z,.24));
+    }
     const overview=new T.OrthographicCamera(-60,60,36,-36,.1,600);
     const walk=new T.PerspectiveCamera(61,1,.07,230);
     const ctl=new OrbitControls(overview,renderer.domElement);
@@ -172,7 +177,12 @@ export function setupViewer({stage,viewport,compass,cameraLabel,touch,onPoint,on
             if (hit) onPin(hit.object.userData.noteId);
             return;
         }
-        const hit=ray.intersectObjects([...site.surfaceMeshes,site.structures],true)[0];
+        const pickable=[...site.surfaceMeshes,site.structures];
+        if(improvement.group.visible) pickable.push(improvement.group);
+        const hit=ray.intersectObjects(pickable,true).find(hit=>{
+            for(let o=hit.object;o;o=o.parent) if(!o.visible) return false;
+            return true;
+        });
         if(hit && withinScene(hit.point.x,hit.point.z)) onPoint({x:+hit.point.x.toFixed(2),z:+hit.point.z.toFixed(2),offset:+T.MathUtils.clamp(hit.point.y-heightAt(hit.point.x),0,17).toFixed(2)});
         else onPoint(null);
     }
@@ -268,6 +278,29 @@ export function setupViewer({stage,viewport,compass,cameraLabel,touch,onPoint,on
 
     return {
         setMode,focus,
+        setProject(value) {
+            improvement.group.visible=value;
+            if(mode==='walk'&&!validStep(walk.position.x,walk.position.z)) resetWalk();
+            renderer.shadowMap.needsUpdate=true;
+            render=true;
+        },
+        setCanopy(value) {
+            improvement.roof.visible=value;
+            render=true;
+        },
+        setEvening(value) {
+            if(value&&!duskSky) duskSky=skyTexture(true);
+            scene.background=value?duskSky:daySky;
+            scene.fog.color.set(value?'#8995b0':'#c2dbe8');
+            horizon.intensity=value?.62:2.05;
+            horizon.color.set(value?'#c5d4ff':'#f0f6ff');
+            sun.intensity=value?.51:2.35;
+            sun.color.set(value?'#ffbc87':'#fff0d6');
+            renderer.toneMappingExposure=value?1.36:1.16;
+            improvement.setEvening(value);
+            renderer.shadowMap.needsUpdate=true;
+            render=true;
+        },
         reset(){mode==='walk'?resetWalk():snapOrbit();render=true;},
         setLayer(id,visible) {(id==='water'?site.waterLayer:site.powerLayer).visible=visible;render=true;},
         setPlacing(value){placing=value;},

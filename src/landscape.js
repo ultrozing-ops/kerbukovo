@@ -7,12 +7,15 @@ const randomFor = value => () => {
 };
 const earth = (color,options={}) => new T.MeshStandardMaterial({color,roughness:.95,...options});
 
-export function skyTexture() {
+export function skyTexture(evening=false) {
     const canvas=document.createElement('canvas');
     canvas.width=1024;canvas.height=512;
     const ctx=canvas.getContext('2d');
     const gradient=ctx.createLinearGradient(0,0,0,canvas.height);
-    for(const [at,color] of [[0,'#4d91cc'],[.26,'#7eb9e4'],[.475,'#c8e8fa'],[.53,'#d6e7ee'],[1,'#e0e9d8']]) {
+    const stops=evening
+        ?[[0,'#263c68'],[.26,'#475f8c'],[.475,'#aaa0ab'],[.53,'#e7b89f'],[1,'#8d8a81']]
+        :[[0,'#4d91cc'],[.26,'#7eb9e4'],[.475,'#c8e8fa'],[.53,'#d6e7ee'],[1,'#e0e9d8']];
+    for(const [at,color] of stops) {
         gradient.addColorStop(at,color);
     }
     ctx.fillStyle=gradient;ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -29,8 +32,8 @@ export function skyTexture() {
                 ctx.translate(x+offset+shift,y-elevation+(random()-.5)*6);
                 ctx.scale(1.28,.55+random()*.19);
                 const haze=ctx.createRadialGradient(0,-2,2,0,0,radius);
-                haze.addColorStop(0,'rgba(255,255,255,.91)');
-                haze.addColorStop(.51,'rgba(255,255,255,.73)');
+                haze.addColorStop(0,evening?'rgba(222,182,176,.63)':'rgba(255,255,255,.91)');
+                haze.addColorStop(.51,evening?'rgba(194,162,170,.46)':'rgba(255,255,255,.73)');
                 haze.addColorStop(1,'rgba(240,250,255,0)');
                 ctx.fillStyle=haze;ctx.fillRect(-radius,-radius,radius*2,radius*2);
                 ctx.restore();
