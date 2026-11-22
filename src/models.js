@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {boundary, gate, house, porchDepth, bath, cabin, containerA, containerB, heightAt, center,
+import {boundary, gate, house, porchDepth, bath, cabin, toilet, containerA, containerB, heightAt, center,
     trees, surfaces, pole, electricEnd, well, entry, water} from './site-data.js';
 import {profileFence} from './profile-fence.js';
 
@@ -138,10 +138,10 @@ function horizontal(poly, y, material, parent) {
     return mesh;
 }
 
-function wallCap(parent,mat,x,y0,a,b,peak) {
+function wallCap(parent,mat,x,y0,a,b,peak,apexZ=(a+b)/2) {
     const g=new T.BufferGeometry();
-    g.setAttribute('position',new T.Float32BufferAttribute([x,y0,a,x,y0,b,x,peak,(a+b)/2],3));
-    g.setAttribute('uv',new T.Float32BufferAttribute([0,0,(b-a)/2.25,0,(b-a)/4.5,(peak-y0)/1.22],2));
+    g.setAttribute('position',new T.Float32BufferAttribute([x,y0,a,x,y0,b,x,peak,apexZ],3));
+    g.setAttribute('uv',new T.Float32BufferAttribute([0,0,(b-a)/2.25,0,(apexZ-a)/2.25,(peak-y0)/1.22],2));
     g.computeVertexNormals();
     const cap = new T.Mesh(g,mat);
     cap.castShadow=cap.receiveShadow=true;
@@ -200,32 +200,44 @@ function makeBuilding(group,foot,opts,m) {
         box(group,m.deck,ix,gy+.056,front+.50,1.26,.112,1.0,{repeat:true});
         box(group,m.deck,ix,gy+(base-gy)*.35,front+.23,1.13,(base-gy)*.70,.46,{repeat:true});
     }
-    for (const side of [x-.004,x+w+.004]) wallCap(group,bodyMat,side,top,back,front,ridge);
     for (const corner of [[x,back],[x+w,back],[x,front],[x+w,front]]) {
         box(group,m.trim,corner[0],(base+top)/2,corner[1],.105,top-base,.105);
     }
     const e=opts.overhang??.31;
-    const outerTop=top-.10;
-    roof(group,roofMat,m.dark,x-e,x+w+e,back-e,mid,outerTop,ridge+.13);
-    if (openDepth) {
-        roof(group,roofMat,m.dark,x-e,x+w+e,mid,front-.20,ridge+.13,top+.23);
-        roof(group,roofMat,m.dark,x-e,x+w+e,front-.20,z+d+e,top+.23,top-.26);
-        box(group,m.trim,x+w/2,top-.324,z+d+e,w+2*e,.14,.13);
-        for (const ix of [x+.15,x+w*.345,x+w*.675,x+w-.15]) {
-            box(group,m.trim,ix,(base+top-.30)/2,z+d-.15,.17,top-.30-base,.19);
-        }
-        const steps=4;
-        for (let i=0;i<steps;i++) {
-            const ix=x+1.32, iz=z+d+.14+(steps-i-1)*.24, gy=heightAt(ix);
-            const h=(base-gy+.01)*(i+1)/(steps+1);
-            box(group,m.deck,ix,gy+h*.5,iz,1.55,h,.28,{repeat:true});
-        }
+    if (opts.kind==='cabin') {
+        const rise=.42;
+        const slope=rise/(front-back);
+        for (const side of [x-.004,x+w+.004]) wallCap(group,bodyMat,side,top,back,front,top+rise,front);
+        box(group,bodyMat,x+w/2,top+rise/2,front-.045,w,rise,.09,{repeat:true});
+        const low=top+.065-e*slope;
+        const high=top+.065+rise+e*slope;
+        roof(group,roofMat,m.dark,x-e,x+w+e,back-e,front+e,low,high);
+        box(group,roofMat,x+w/2,high-.059,front+e,w+2*e,.106,.09);
+        box(group,roofMat,x+w/2,low-.053,back-e,w+2*e,.098,.09);
     } else {
-        roof(group,roofMat,m.dark,x-e,x+w+e,mid,front+e,ridge+.13,outerTop);
-        box(group,m.trim,x+w/2,outerTop-.07,front+e,w+2*e,.14,.106);
+        for (const side of [x-.004,x+w+.004]) wallCap(group,bodyMat,side,top,back,front,ridge);
+        const outerTop=top-.10;
+        roof(group,roofMat,m.dark,x-e,x+w+e,back-e,mid,outerTop,ridge+.13);
+        if (openDepth) {
+            roof(group,roofMat,m.dark,x-e,x+w+e,mid,front-.20,ridge+.13,top+.23);
+            roof(group,roofMat,m.dark,x-e,x+w+e,front-.20,z+d+e,top+.23,top-.26);
+            box(group,m.trim,x+w/2,top-.324,z+d+e,w+2*e,.14,.13);
+            for (const ix of [x+.15,x+w*.345,x+w*.675,x+w-.15]) {
+                box(group,m.trim,ix,(base+top-.30)/2,z+d-.15,.17,top-.30-base,.19);
+            }
+            const steps=4;
+            for (let i=0;i<steps;i++) {
+                const ix=x+1.32, iz=z+d+.14+(steps-i-1)*.24, gy=heightAt(ix);
+                const h=(base-gy+.01)*(i+1)/(steps+1);
+                box(group,m.deck,ix,gy+h*.5,iz,1.55,h,.28,{repeat:true});
+            }
+        } else {
+            roof(group,roofMat,m.dark,x-e,x+w+e,mid,front+e,ridge+.13,outerTop);
+            box(group,m.trim,x+w/2,outerTop-.07,front+e,w+2*e,.14,.106);
+        }
+        box(group,m.trim,x+w/2,outerTop-.07,back-e,w+2*e,.14,.106);
+        beam(group,m.dark,V(x-e-.045,ridge+.17,mid),V(x+w+e+.045,ridge+.17,mid),.097,.114);
     }
-    box(group,m.trim,x+w/2,outerTop-.07,back-e,w+2*e,.14,.106);
-    beam(group,m.dark,V(x-e-.045,ridge+.17,mid),V(x+w+e+.045,ridge+.17,mid),.097,.114);
     const frame = (side, offset, bottom, width, height, door=false, inset=0) => {
         const winY=base+bottom+height/2;
         const project=(ds) => side==='east' ? [x+w+ds,z+offset] : side==='north' ? [x+offset,back-ds] : [x+offset,front-inset+ds];
@@ -259,6 +271,24 @@ function makeBuilding(group,foot,opts,m) {
         }
     }
     return base;
+}
+
+function makeToilet(group, footprint, m) {
+    const {x,z,w,d}=footprint;
+    const cx=x+w/2, cz=z+d/2, ground=heightAt(cx);
+    box(group,m.dark,cx,ground+.070,cz,w+.06,.15,d+.07);
+    box(group,m.toiletShell,cx,ground+1.13,cz,w,2.03,d);
+    box(group,m.toiletTop,cx,ground+2.19,cz,w+.13,.15,d+.13);
+    box(group,m.toiletTop,cx,ground+2.28,cz,w-.13,.055,d-.09);
+    box(group,m.toiletFrame,cx,ground+1.115,z-.018,.845,1.91,.035);
+    box(group,m.toiletDoor,cx,ground+1.11,z-.045,.748,1.825,.042);
+    box(group,m.dark,cx+.27,ground+1.08,z-.079,.094,.042,.045);
+    for (let n=0;n<4;n++) {
+        box(group,m.dark,cx,ground+1.78+n*.04,z-.073,.38,.012,.015);
+    }
+    for (const bx of [x+.10,x+w-.10]) {
+        box(group,m.toiletFrame,bx,ground+1.137,z+d+.009,.041,1.92,.029);
+    }
 }
 
 function makeContainer(group,foot,m) {
@@ -361,7 +391,9 @@ export function createSite(scene) {
         bathWood:new T.MeshStandardMaterial({color:'#cba982',map:texture('wood'),roughness:.85,side:T.DoubleSide}),
         deck:new T.MeshStandardMaterial({map:texture('deck'),roughness:.84}),
         cut:standard('#766351'),trim:standard('#cda77a'),roof:standard('#243848',.44,.32),
-        roofGreen:standard('#3b6549',.48,.31),pile:standard('#92958d'),dark:standard('#37453e',.54,.28),
+        roofGreen:standard('#3b6549',.48,.31),
+        toiletShell:standard('#31705a',.61),toiletTop:standard('#4b8a6e',.62),
+        toiletDoor:standard('#47896a',.70),toiletFrame:standard('#265343',.66),pile:standard('#92958d'),dark:standard('#37453e',.54,.28),
         fence:standard('#69796b',.66,.25),glass:standard('#263b43',.23,.29),
         door:standard('#384149',.53),bark:standard('#6d543e'),
         leaf:new T.MeshStandardMaterial({vertexColors:true,roughness:.97,side:T.DoubleSide}),
@@ -389,7 +421,8 @@ export function createSite(scene) {
     fence(structures,m.fence,boundary,gate);
     const deckY=makeBuilding(structures,house,{kind:'house',piles:true,porch:porchDepth},m);
     makeBuilding(structures,bath,{kind:'bath',body:m.bathWood,base:.35,wall:2.30,rise:1.13},m);
-    makeBuilding(structures,cabin,{kind:'cabin',body:m.cabinWood,roof:m.roofGreen,base:.29,wall:2.05,rise:.42,overhang:.20},m);
+    makeBuilding(structures,cabin,{kind:'cabin',body:m.cabinWood,roof:m.roofGreen,base:.29,wall:2.05,overhang:.20},m);
+    makeToilet(structures,toilet,m);
     const containerRoof=makeContainer(structures,containerA,m);
     makeContainer(structures,containerB,m);
     for(const [i,tree] of trees.entries()) spruce(structures,tree,350+i*57,m);

@@ -1,7 +1,7 @@
 import * as T from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {createSite} from './models.js';
-import {withinScene,boundary,contains,heightAt,house,porchDepth,bath,cabin,containerA,containerB,gate,pole} from './site-data.js';
+import {withinScene,boundary,contains,heightAt,house,porchDepth,bath,cabin,toilet,containerA,containerB,gate,pole} from './site-data.js';
 
 const vectors={KeyW:[0,1],ArrowUp:[0,1],KeyA:[-1,0],ArrowLeft:[-1,0],KeyS:[0,-1],ArrowDown:[0,-1],
     KeyD:[1,0],ArrowRight:[1,0]};
@@ -139,9 +139,10 @@ export function setupViewer({stage,viewport,compass,cameraLabel,touch,onPoint,on
         render=true;
     }
 
-    function focus(at,size=8) {
+    function focus(at,size=8,approach) {
         if (mode==='walk') {
             const offsets=[[.65,1],[1,.42],[.12,1],[-.72,1],[-.85,-.47],[.48,-.78],[.9,-1],[-1,.1]];
+            if (approach) offsets.unshift(approach);
             const found=offsets.map(([x,z])=>({x:at.x+x*size*.75,z:at.z+z*size*.75})).find(p=>validStep(p.x,p.z));
             if(!found) return;
             walk.position.set(found.x,heightAt(found.x)+1.66,found.z);

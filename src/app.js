@@ -132,7 +132,7 @@ for(const item of objects) {
     row.addEventListener('click',()=>{
         document.querySelector('.object-row.active')?.classList.remove('active');
         row.classList.add('active');
-        viewer?.focus(item.at,item.size);
+        viewer?.focus(item.at,item.size,item.approach);
         if(mode==='walk') viewport.focus({preventScroll:true});
         if(innerWidth<=850) viewport.scrollIntoView({block:'nearest',behavior:'smooth'});
     });
