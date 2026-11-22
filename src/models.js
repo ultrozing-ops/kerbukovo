@@ -183,13 +183,23 @@ function makeBuilding(group,foot,opts,m) {
     const top=base+(opts.wall??2.58);
     const ridge=top+(opts.rise??1.64);
     const mid=(back+front)/2;
+    const alcove=opts.kind==='bath'?{left:x+.58,right:x+2.23,depth:.73}:null;
     const floors=opts.piles?[x+.22,x+w/2,x+w-.22]:[x+.29,x+w-.29];
     for (const ix of floors) for (const iz of [z+.24,(z+front)/2,z+d-.18]) {
         const gy=heightAt(ix), h=base-gy;
         box(group,m.pile,ix,gy+h/2-.015,iz,.22,h,.23);
     }
     box(group,m.deck,x+w/2,base-.075,z+d/2,w,.17,d,{repeat:true});
-    box(group,bodyMat,x+w/2,(base+top)/2,(front+back)/2,w,top-base,front-back,{repeat:true});
+    const wallEnd=front-(alcove?.depth||0);
+    box(group,bodyMat,x+w/2,(base+top)/2,(wallEnd+back)/2,w,top-base,wallEnd-back,{repeat:true});
+    if (alcove) {
+        for(const [l,r] of [[x,alcove.left],[alcove.right,x+w]]) {
+            box(group,bodyMat,(l+r)/2,(base+top)/2,(wallEnd+front)/2,r-l,top-base,alcove.depth,{repeat:true});
+        }
+        const ix=x+w*.28, gy=heightAt(ix);
+        box(group,m.deck,ix,gy+.056,front+.50,1.26,.112,1.0,{repeat:true});
+        box(group,m.deck,ix,gy+(base-gy)*.35,front+.23,1.13,(base-gy)*.70,.46,{repeat:true});
+    }
     for (const side of [x-.004,x+w+.004]) wallCap(group,bodyMat,side,top,back,front,ridge);
     for (const corner of [[x,back],[x+w,back],[x,front],[x+w,front]]) {
         box(group,m.trim,corner[0],(base+top)/2,corner[1],.105,top-base,.105);
@@ -216,9 +226,9 @@ function makeBuilding(group,foot,opts,m) {
     }
     box(group,m.trim,x+w/2,outerTop-.07,back-e,w+2*e,.14,.106);
     beam(group,m.dark,V(x-e-.045,ridge+.17,mid),V(x+w+e+.045,ridge+.17,mid),.097,.114);
-    const frame = (side, offset, bottom, width, height, door=false) => {
+    const frame = (side, offset, bottom, width, height, door=false, inset=0) => {
         const winY=base+bottom+height/2;
-        const project=(ds) => side==='east' ? [x+w+ds,z+offset] : side==='north' ? [x+offset,back-ds] : [x+offset,front+ds];
+        const project=(ds) => side==='east' ? [x+w+ds,z+offset] : side==='north' ? [x+offset,back-ds] : [x+offset,front-inset+ds];
         const angle=side==='east'?Math.PI/2:0;
         const panel=(mat,dy,w0,h0,d0)=>{
             const [cx,cz]=project(dy);
@@ -241,7 +251,7 @@ function makeBuilding(group,foot,opts,m) {
         frame('north',w*.32,1.0,.92,1.03);
         frame('north',w*.72,1.0,.85,1.03);
     } else {
-        frame('south',w*.28,.051,opts.kind==='cabin'?.67:.76,opts.kind==='cabin'?1.72:1.78,true);
+        frame('south',w*.28,.051,opts.kind==='cabin'?.67:.76,opts.kind==='cabin'?1.72:1.78,true,alcove?.depth||0);
         frame('south',w*.73,.99,opts.kind==='cabin'?.76:.64,.64);
         if (opts.kind==='bath') {
             cylinder(group,m.dark,x+w*.72,ridge+.29,mid-.47,.105,.86,14);
@@ -414,6 +424,7 @@ export function createSite(scene) {
     }
     return {structures,ground,surfaceMeshes:[...surfaceMeshes,surroundings],waterLayer,powerLayer,marking,deckY};
 }
+
 
 
 
