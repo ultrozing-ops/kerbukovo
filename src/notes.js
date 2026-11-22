@@ -1,4 +1,4 @@
-import {withinPlot} from './site-data.js';
+import {withinScene} from './site-data.js';
 
 export const MAX_NOTES=120;
 const key='kerbukovo-notes-1';
@@ -12,7 +12,7 @@ export function readDocument(raw) {
         if(!n || typeof n.id!=='string' || !/^[a-zA-Z0-9-]{1,75}$/.test(n.id) || used.has(n.id)
             || typeof n.title!=='string' || !n.title.trim() || n.title.length>90
             || typeof n.text!=='string' || n.text.length>600
-            || !Number.isFinite(n.x) || !Number.isFinite(n.z) || !withinPlot(n.x,n.z)
+            || !Number.isFinite(n.x) || !Number.isFinite(n.z) || !withinScene(n.x,n.z)
             || n.offset!==undefined && (!Number.isFinite(n.offset)||n.offset<0||n.offset>17))
             throw Error('В файле есть некорректная пометка.');
         used.add(n.id);
@@ -45,3 +45,4 @@ export function shareLink(notes,url) {
     target.hash='notes='+encoded;
     return target.href;
 }
+

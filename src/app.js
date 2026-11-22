@@ -33,7 +33,7 @@ function panelTo(newPanel) {
 }
 
 function hintText() {
-    hint.textContent=isPlacing?'Выберите точку на участке · Esc — отмена':hints[mode];
+    hint.textContent=isPlacing?'Выберите точку в сцене · Esc — отмена':hints[mode];
 }
 
 function place(value) {
@@ -55,7 +55,7 @@ function resetForm() {
 }
 
 function onPoint(point) {
-    if(!point) {tell('Выберите точку внутри границы участка.');return;}
+    if(!point) {tell('Выберите точку в видимой зоне рядом с участком.');return;}
     place(false);
     resetForm();
     draft=point;
@@ -242,4 +242,5 @@ function loadHash() {
 }
 window.addEventListener('hashchange',loadHash);
 loadHash();
+
 

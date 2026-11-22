@@ -1,6 +1,7 @@
 import * as T from 'three';
 import {boundary, gate, house, porchDepth, bath, cabin, containerA, containerB, heightAt, center,
     trees, surfaces, pole, electricEnd, well, entry, water} from './site-data.js';
+import {profileFence} from './profile-fence.js';
 
 const V = (x,y,z) => new T.Vector3(x,y,z);
 const standard = (color, roughness=.82, metalness=0) => new T.MeshStandardMaterial({color,roughness,metalness});
@@ -13,13 +14,14 @@ function texture(kind) {
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = 256;
     const ctx = canvas.getContext('2d');
-    const rand = seed({gravel:53,soil:182,sand:273,wood:281,deck:102}[kind]);
+    const rand = seed({gravel:53,soil:182,sand:273,wood:281,deck:102,meadow:620}[kind]);
     const palettes = {
         sand: ['#ad9b79','#c2ae87','#9a8a69','#a89069','#cbb68b'],
         soil: ['#63523e','#716047','#4c3d2d','#77644c','#5a4a37'],
         gravel: ['#b5b8b1','#afb2ab','#858d87','#c9ccc2','#9a9e96','#9a9c94'],
         wood: ['#d9b683','#c8a374','#e0bf93','#aa885f','#d4a877','#ead0a7'],
         deck: ['#a9855d','#926f4d','#b48b62','#ca9d71','#ae885f'],
+        meadow: ['#9ca88b','#a7ae92','#9ba488','#a7af94','#a8ad96'],
     };
     const palette = palettes[kind];
     ctx.fillStyle = palette[0];
@@ -281,16 +283,21 @@ function fence(parent,mat,plot,gate,zBias=.008) {
     const runs=[];
     for(let i=0;i<plot.length;i++) {
         const a=plot[i],b=plot[(i+1)%plot.length];
-        if(i===4) runs.push([a,gate[0]],[gate[1],b]); else runs.push([a,b]);
+        if(i===4) runs.push([a,gate[0],false],[gate[1],b,false]);
+        else runs.push([a,b,i===0||i===7]);
     }
     const postGeometry = new T.BoxGeometry(.091,1.40,.095);
     const fineGeometry = new T.BoxGeometry(.038,1.17,.031);
     const pieces=[],post=[];
-    for (const [a,b] of runs) {
+    for (const [a,b,solid] of runs) {
         const len=Math.hypot(b.x-a.x,b.z-a.z);
         const pos=(t)=>({x:T.MathUtils.lerp(a.x,b.x,t),z:T.MathUtils.lerp(a.z,b.z,t)+zBias});
         const step=Math.max(1,Math.round(len/2.8));
         for(let k=0;k<=step;k++) post.push(pos(k/step));
+        if(solid) {
+            profileFence(parent,a,b,heightAt,{inside:'#d3d6d5',outside:'#4a704f'});
+            continue;
+        }
         const n=Math.round(len/.38);
         for(let i=1;i<n;i++) pieces.push(pos(i/n));
         for(const y of [.31,1.18]) beam(parent,mat,V(a.x,heightAt(a.x)+y,a.z),V(b.x,heightAt(b.x)+y,b.z),.037,.044,false);
@@ -336,6 +343,7 @@ function spruce(parent,{x,z,h},seedValue,m) {
 export function createSite(scene) {
     const m = {
         sand:new T.MeshStandardMaterial({map:texture('sand'),roughness:.98}),
+        meadow:new T.MeshStandardMaterial({map:texture('meadow'),roughness:.99}),
         soil:new T.MeshStandardMaterial({map:texture('soil'),roughness:.98}),
         gravel:new T.MeshStandardMaterial({map:texture('gravel'),roughness:.95}),
         wood:new T.MeshStandardMaterial({map:texture('wood'),roughness:.83,side:T.DoubleSide}),
@@ -354,6 +362,8 @@ export function createSite(scene) {
     m.roof.side=m.roofGreen.side=T.DoubleSide;
     const ground=new T.Group(), structures=new T.Group(), waterLayer=new T.Group(), powerLayer=new T.Group(), marking=new T.Group();
     scene.add(ground,structures,waterLayer,powerLayer,marking);
+    const surroundings=horizontal([{x:-450,z:-450},{x:450,z:-450},{x:450,z:450},{x:-450,z:450}],
+        x=>heightAt(x)-.036,m.meadow,ground);
     const surfaceMeshes=[
         horizontal(clipX(boundary,surfaces.black,false),heightAt,m.sand,ground),
         horizontal(clipX(clipX(boundary,surfaces.black,true),surfaces.gravel,false),heightAt,m.soil,ground),
@@ -402,8 +412,9 @@ export function createSite(scene) {
         cylinder(waterLayer,m.waterRing,p.x,y+.040,z,.35,.036,28);
         cylinder(waterLayer,m.water,p.x,y+.068,z,.247,.018,28);
     }
-    return {structures,ground,surfaceMeshes,waterLayer,powerLayer,marking,deckY};
+    return {structures,ground,surfaceMeshes:[...surfaceMeshes,surroundings],waterLayer,powerLayer,marking,deckY};
 }
+
 
 
 

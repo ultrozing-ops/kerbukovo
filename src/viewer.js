@@ -1,7 +1,7 @@
 import * as T from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {createSite} from './models.js';
-import {withinPlot,contains,heightAt,house,porchDepth,bath,cabin,containerA,containerB,gate,pole} from './site-data.js';
+import {withinScene,boundary,contains,heightAt,house,porchDepth,bath,cabin,containerA,containerB,gate,pole} from './site-data.js';
 
 const vectors={KeyW:[0,1],ArrowUp:[0,1],KeyA:[-1,0],ArrowLeft:[-1,0],KeyS:[0,-1],ArrowDown:[0,-1],
     KeyD:[1,0],ArrowRight:[1,0]};
@@ -10,8 +10,20 @@ const walkBoxes=[{...house,d:house.d-porchDepth},bath,cabin,containerA,container
 const porch={...house,z:house.z+house.d-porchDepth,d:porchDepth};
 const fmt = new Intl.NumberFormat('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2});
 
+const perimeter=boundary.flatMap((a,i)=>{
+    const b=boundary[(i+1)%boundary.length];
+    return i===4?[[a,gate[0]],[gate[1],b]]:[[a,b]];
+});
+
+function nearFence(x,z) {
+    return perimeter.some(([a,b])=>{
+        const dx=b.x-a.x,dz=b.z-a.z;
+        const t=T.MathUtils.clamp(((x-a.x)*dx+(z-a.z)*dz)/(dx*dx+dz*dz),0,1);
+        return Math.hypot(x-a.x-dx*t,z-a.z-dz*t)<.24;
+    });
+}
 function validStep(x,z) {
-    return withinPlot(x,z) && !walkBoxes.some(b=>contains(b,x,z,.24));
+    return withinScene(x,z) && !nearFence(x,z) && !walkBoxes.some(b=>contains(b,x,z,.24));
 }
 
 function pinMaterial(number,selected) {
@@ -47,11 +59,7 @@ export function setupViewer({stage,viewport,compass,cameraLabel,touch,onPoint,on
     renderer.toneMappingExposure=1.16;
     renderer.domElement.setAttribute('aria-label','Трёхмерная модель участка');
     stage.appendChild(renderer.domElement);
-    const stagePlane=new T.Mesh(new T.PlaneGeometry(1450,1450),new T.MeshStandardMaterial({color:'#dfe7db',roughness:.96}));
-    stagePlane.rotation.x=-Math.PI/2;
-    stagePlane.position.y=-2.35;
-    stagePlane.receiveShadow=true;
-    scene.add(stagePlane,new T.HemisphereLight('#f0f6ff','#aa9472',2.05));
+    scene.add(new T.HemisphereLight('#f0f6ff','#aa9472',2.05));
     const sun=new T.DirectionalLight('#fff0d6',2.35);
     sun.position.set(-36,77,36);
     sun.castShadow=true;
@@ -161,7 +169,7 @@ export function setupViewer({stage,viewport,compass,cameraLabel,touch,onPoint,on
             return;
         }
         const hit=ray.intersectObjects([...site.surfaceMeshes,site.structures],true)[0];
-        if(hit && withinPlot(hit.point.x,hit.point.z)) onPoint({x:+hit.point.x.toFixed(2),z:+hit.point.z.toFixed(2),offset:+T.MathUtils.clamp(hit.point.y-heightAt(hit.point.x),0,17).toFixed(2)});
+        if(hit && withinScene(hit.point.x,hit.point.z)) onPoint({x:+hit.point.x.toFixed(2),z:+hit.point.z.toFixed(2),offset:+T.MathUtils.clamp(hit.point.y-heightAt(hit.point.x),0,17).toFixed(2)});
         else onPoint(null);
     }
 
@@ -275,6 +283,7 @@ export function setupViewer({stage,viewport,compass,cameraLabel,touch,onPoint,on
         },
     };
 }
+
 
 
 

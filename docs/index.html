@@ -49,7 +49,7 @@
             </div>
             <div class="viewer-footer">
                 <div class="surfaces" aria-label="Типы покрытия">
-                    <span><i class="swatch gravel"></i>Щебень</span><span><i class="swatch blacksoil"></i>Чернозём · 6 м</span><span><i class="swatch sand"></i>Супесь</span>
+                    <span><i class="swatch gravel"></i>Щебень</span><span><i class="swatch blacksoil"></i>Чернозём · 15 м</span><span><i class="swatch sand"></i>Супесь</span>
                 </div>
                 <span class="elevation"><svg class="icon" aria-hidden="true"><use href="#i-slope"/></svg>Перепад 2 м</span>
             </div>
@@ -67,7 +67,7 @@
                 <div id="objects-list" class="object-list"></div>
                 <details class="assumptions">
                     <summary>Привязки и допущения</summary>
-                    <p>Контейнеры параллельны, 4,5 м между длинными стенками. Бытовка показана слева от них, 5 м по линии забора. Въезд принят за отметку 0,0 м, левая граница — за −2,0 м. Перепад распределён равномерно.</p>
+                    <p>Контейнеры параллельны, 4,5 м между длинными стенками. Бытовка показана слева от них, 5 м по линии забора. Въезд принят за отметку 0,0 м, левая граница — за −2,0 м. Перепад распределён равномерно. Верхний левый отрезок забора привязан по фасаду бани. Длинная сторона бани идёт вдоль забора в 1 м от него, фасад на линии крыльца.</p>
                     <p>Привязки, места подключения и форма рельефа требуют обмера. Бирюзовая линия показывает предполагаемую ось траншеи на поверхности.</p>
                 </details>
             </section>
@@ -77,7 +77,7 @@
                     <button class="button small" id="import-notes"><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg>Импорт</button>
                     <input type="file" id="notes-file" accept=".json,application/json" hidden>
                 </div>
-                <div id="notes-empty" class="notes-empty"><h2>Обсудим по точкам</h2><p>Нажмите «Пометка», выберите место на участке и запишите, что хотите там сделать.</p></div>
+                <div id="notes-empty" class="notes-empty"><h2>Обсудим по точкам</h2><p>Нажмите «Пометка», выберите место на участке или рядом и запишите, что хотите там сделать.</p></div>
                 <div id="notes-list" class="note-list"></div>
                 <form id="note-form" class="note-form" hidden>
                     <div class="form-title"><h2 id="note-form-heading">Новая пометка</h2><button type="button" class="icon-button" id="cancel-note" aria-label="Закрыть редактор">×</button></div>
@@ -113,4 +113,5 @@
 </svg>
 </body>
 </html>
+
 
